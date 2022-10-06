@@ -17,6 +17,7 @@ type
     FPosition: array [0..1] of single;
     FColor: string;
     FId: string;
+    FModified: Boolean;
 
     function Serialize: TJsonObject;
     procedure ChangeColor;
@@ -26,11 +27,15 @@ type
     class procedure Move(const Id: string; x, y: single);
     class procedure ChangeColorForCircle(const Id: string);
     class procedure DestroyCircle(const Id: string);
+    class function SerializeModifiedCircles: TJsonArray; static;
+    class procedure UnsetModifiedCircles; static;
 
     constructor Create(x, y: single; const Color: string);
 
     class constructor Create;
     class destructor Destroy;
+
+    property Modified: Boolean read FModified write FModified;
   end;
 
 implementation
@@ -68,6 +73,7 @@ begin
   FCirclesMutex.Acquire;
   FCircles.Add(FId, Self);
   FCirclesMutex.Release;
+  FModified := True;
 end;
 
 destructor TCircle.Destroy;
@@ -102,6 +108,33 @@ begin
   FCirclesMutex.Release;
 end;
 
+class function TCircle.SerializeModifiedCircles: TJsonArray;
+var
+  CirclesArr: TArray<TCircle>;
+  i: integer;
+begin
+  Result := TJsonArray.Create;
+
+  FCirclesMutex.Acquire;
+  CirclesArr := FCircles.Values.ToArray;
+  for i := 0 to Length(CirclesArr) - 1 do
+    if CirclesArr[i].Modified then
+      Result.Add(CirclesArr[i].Serialize);
+  FCirclesMutex.Release;
+end;
+
+class procedure TCircle.UnsetModifiedCircles;
+var
+  CirclesArr: TArray<TCircle>;
+  i: integer;
+begin
+  FCirclesMutex.Acquire;
+  CirclesArr := FCircles.Values.ToArray;
+  for i := 0 to Length(CirclesArr) - 1 do
+    CirclesArr[i].Modified := False;
+  FCirclesMutex.Release;
+end;
+
 class procedure TCircle.Move(const Id: string; x, y: single);
 var
   c: TCircle;
@@ -112,6 +145,7 @@ begin
     c := FCircles[Id];
     c.FPosition[0] := x;
     c.FPosition[1] := y;
+    c.Modified := True;
   end;
   FCirclesMutex.Release;
 end;
@@ -136,6 +170,7 @@ procedure TCircle.ChangeColor;
 
 begin
   FColor := '#' + ColorToHex(GetRandomColor);
+  Modified := True;
 end;
 
 class procedure TCircle.ChangeColorForCircle(const Id: string);

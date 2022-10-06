@@ -1,0 +1,51 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{3D773BAA-4D80-482D-B252-0928D9DB7317}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="1-QuickStart\WebSocketDemo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="2-Circles\CirclesDemo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="3-WSS\WebSocketDemo.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="WebSocketDemo">
+        <MSBuild Projects="3-WSS\WebSocketDemo.dproj"/>
+    </Target>
+    <Target Name="WebSocketDemo:Clean">
+        <MSBuild Projects="3-WSS\WebSocketDemo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="WebSocketDemo:Make">
+        <MSBuild Projects="3-WSS\WebSocketDemo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="CirclesDemo">
+        <MSBuild Projects="2-Circles\CirclesDemo.dproj"/>
+    </Target>
+    <Target Name="CirclesDemo:Clean">
+        <MSBuild Projects="2-Circles\CirclesDemo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CirclesDemo:Make">
+        <MSBuild Projects="2-Circles\CirclesDemo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="WebSocketDemo;CirclesDemo;WebSocketDemo"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="WebSocketDemo:Clean;CirclesDemo:Clean;WebSocketDemo:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="WebSocketDemo:Make;CirclesDemo:Make;WebSocketDemo:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

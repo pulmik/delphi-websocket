@@ -121,21 +121,25 @@ begin
   begin
     if Assigned(FServer.Contexts) then
     begin
-      Json := TCircle.SerializeAllCircles;
-      JsonStr := Json.ToJSON;
-      Json.DisposeOf;
+      Json := TCircle.SerializeModifiedCircles;
+      if Json.Count > 0 then
+      begin
+        JsonStr := Json.ToJSON;
+        Json.DisposeOf;
 
-      Clients := FServer.Contexts.LockList;
-      try
-        for i := 0 to Clients.Count - 1 do
-          if TIdContext(Clients[i]).Connection.Connected then
-            TWebSocketIOHandlerHelper(TIdContext(Clients[i]).Connection.IOHandler).WriteString(JsonStr);
-      finally
-        FServer.Contexts.UnlockList;
+        Clients := FServer.Contexts.LockList;
+        try
+          for i := 0 to Clients.Count - 1 do
+            if TIdContext(Clients[i]).Connection.Connected then
+              TWebSocketIOHandlerHelper(TIdContext(Clients[i]).Connection.IOHandler).WriteString(JsonStr);
+        finally
+          FServer.Contexts.UnlockList;
+        end;
+        TCircle.UnsetModifiedCircles;
       end;
     end;
 
-    sleep(100);
+    sleep(10);
   end;
 end;
 
